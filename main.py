@@ -141,8 +141,16 @@ def _clustered_palette_percent(img: Image.Image, k: int = TOP_K) -> list[tuple[t
         return []
 
     # Center LAB -> representative RGB
-    centers_lab_u8 = km.cluster_centers_.clip(0, 255).astype(np.uint8).reshape(k, 1, 1, 3)
-    centers_rgb = np.asarray(Image.fromarray(centers_lab_u8, "LAB").convert("RGB"), dtype=np.uint8).reshape(k, 3)
+    centers_lab = km.cluster_centers_.clip(0, 255).astype(np.uint8)  # (k, 3)
+
+    centers_rgb_list = []
+    for i in range(k):
+        lab_pixel = centers_lab[i].reshape((1, 1, 3))  # (1,1,3)
+        rgb_pixel = Image.fromarray(lab_pixel, mode="LAB").convert("RGB")
+        rgb_arr = np.asarray(rgb_pixel, dtype=np.uint8).reshape(3,)
+        centers_rgb_list.append(rgb_arr)
+
+    centers_rgb = np.stack(centers_rgb_list, axis=0)  # (k, 3)
 
     order = np.argsort(counts)[::-1]
     out: list[tuple[tuple[int, int, int], float]] = []
