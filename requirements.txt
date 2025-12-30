@@ -4,3 +4,4 @@ pillow
 numpy
 httpx
 scikit-learn
+python-multipart
